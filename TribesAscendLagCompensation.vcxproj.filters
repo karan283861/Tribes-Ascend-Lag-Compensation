@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Tribes-Ascend-SDK">
+      <UniqueIdentifier>{96295364-0b4c-4e65-a1d1-4d6c69928ddd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Tribes-Ascend-SDK\SDK_HEADERS">
+      <UniqueIdentifier>{c659c38e-8dee-4ba7-a454-456e988b0cf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tribes-Ascend-SDK">
+      <UniqueIdentifier>{83db95a7-cc34-429d-ab59-0daeb4fc17da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tribes-Ascend-SDK\SDK_SOURCES">
+      <UniqueIdentifier>{315ffdb6-f1f4-44dc-8f3c-43de5bc310a1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hook.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\GFxUI_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\IpDrv_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\OnlineSubsystemMcts_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\PlatformCommon_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\TribesGame_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\TribesGameContent_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\UDKBase_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\UTGame_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\WinDrv_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\XAudio2_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Core_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Engine_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+    <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\GameFramework_functions.cpp">
+      <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Hook.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UDKBase_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UDKBase_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UTGame_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UTGame_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UTGame_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\WinDrv_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\WinDrv_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\WinDrv_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Engine_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Engine_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Engine_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GameFramework_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GameFramework_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GameFramework_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GFxUI_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GFxUI_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\GFxUI_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\IpDrv_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\IpDrv_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\IpDrv_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\OnlineSubsystemMcts_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\OnlineSubsystemMcts_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\OnlineSubsystemMcts_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\PlatformCommon_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\PlatformCommon_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\PlatformCommon_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGame_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGame_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGame_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGameContent_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGameContent_f_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\TribesGameContent_structs.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\UDKBase_classes.h">
+      <Filter>Header Files\Tribes-Ascend-SDK\SDK_HEADERS</Filter>
+    </ClInclude>
+    <ClInclude Include="Tribes-Ascend-SDK\SdkHeaders.h">
+      <Filter>Header Files\Tribes-Ascend-SDK</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
