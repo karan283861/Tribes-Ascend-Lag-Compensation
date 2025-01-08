@@ -10,3 +10,6 @@
 [submodule "Tribes-Ascend-SDK"]
 	path = Tribes-Ascend-SDK
 	url = git@github.com:karan283861/Tribes-Ascend-SDK.git
+[submodule "circularbuffer"]
+	path = circularbuffer
+	url = git@github.com:vinitjames/circularbuffer.git

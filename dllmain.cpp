@@ -12,12 +12,14 @@
 #endif
 
 #include "Hook.hpp"
+#include "ProcessEventHooks.hpp"
+#include "ProcessInternalHooks.hpp"
 
 void OnDLLProcessAttach()
 {
 	auto base_address = reinterpret_cast<unsigned int>(GetModuleHandle(0));
 
-#ifdef _DEBUG
+#ifndef PLOG_DISABLE_LOGGING
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
@@ -25,35 +27,41 @@ void OnDLLProcessAttach()
 #endif
 	PLOG_INFO << "Successfully Injected DLL.";
 
-	// Locate the ProcessEvent function
-	UObject* Object = UObject::GObjObjects()->Data[1];
-	unsigned long* cObject = (unsigned long*)Object;
-	unsigned long* ProcessEventsAddress = (unsigned long*)(*(cObject)+65 * sizeof(unsigned long));
-	OriginalProcessEventFunction = reinterpret_cast<ProcessEventPrototype>(*ProcessEventsAddress);
-
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach(&(PVOID&)OriginalProcessEventFunction, ProcessEventHook);
+	DetourAttach(&(PVOID&)OriginalProcessInternalFunction, ProcessInternalHook);
 	auto error = DetourTransactionCommit();
 
 	ProcessEventHooks = UFunctionHooks<ProcessEventPrototype>(OriginalProcessEventFunction);
+	ProcessEventHooks.AddHook("Function Engine.HUD.PostRender", Engine_HUD_PostRender_Hook);
+	ProcessEventHooks.AddHook("Function TribesGame.TrGameReplicationInfo.Tick",
+							  TribesGame_TrGameReplicationInfo_Tick_Hook,
+							  FunctionHookType::kPost);
+	ProcessEventHooks.AddHook("Function TribesGame.TrProjectile.PostBeginPlay",
+							  TribesGame_TrProjectile_PostBeginPlay_Hook, FunctionHookType::kPost);
+	
+
+	ProcessInternalHooks = UFunctionHooks<ProcessInternalPrototype>(OriginalProcessInternalFunction);
+	ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.Explode",
+								 TribesGame_TrProjectile_Explode_Hook,
+								 FunctionHookType::kPost);
 }
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-                     )
+BOOL APIENTRY DllMain(HMODULE hModule,
+					  DWORD  ul_reason_for_call,
+					  LPVOID lpReserved)
 {
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)OnDLLProcessAttach, NULL, NULL, NULL);
-		break;
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
+	switch (ul_reason_for_call)
+	{
+		case DLL_PROCESS_ATTACH:
+			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)OnDLLProcessAttach, NULL, NULL, NULL);
+			break;
+		case DLL_THREAD_ATTACH:
+		case DLL_THREAD_DETACH:
+		case DLL_PROCESS_DETACH:
+			break;
+	}
+	return TRUE;
 }
 

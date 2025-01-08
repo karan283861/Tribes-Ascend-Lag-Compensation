@@ -8,11 +8,45 @@
 using ProcessEventPrototype = void(__fastcall*)(UObject* CallingUObject,
 												void* Unused, UFunction* CallingUFunction,
 												void* Parameters, void* Result);
+
 void __fastcall ProcessEventHook(UObject* CallingUObject,
 								 void* Unused, UFunction* CallingUFunction,
 								 void* Parameters, void* Result);
 
 extern ProcessEventPrototype OriginalProcessEventFunction;
+
+class FFrame
+{
+public:
+	void* m_VMT{};
+	char m_UnknownData0[12]{};
+	UStruct* m_Node{};
+	UObject* m_Object{};
+	char* m_Code{};
+	char* m_Locals{};
+	int	m_LineNum{};
+	FFrame* m_PreviousFrame{};
+};
+
+using ProcessEventPrototype = void(__fastcall*)(UObject* CallingUObject,
+												void* Unused, UFunction* CallingUFunction,
+												void* Parameters, void* Result);
+
+void __fastcall ProcessEventHook(UObject* CallingUObject,
+								 void* Unused, UFunction* CallingUFunction,
+								 void* Parameters, void* Result);
+
+extern ProcessEventPrototype OriginalProcessEventFunction;
+
+using ProcessInternalPrototype = void(__fastcall*)(UObject* CallingUObject,
+												   void* Unused, FFrame& Stack,
+												   void* Result);
+
+void __fastcall ProcessInternalHook(UObject* CallingUObject,
+									void* Unused, FFrame& Stack,
+									void* Result);
+
+extern ProcessInternalPrototype OriginalProcessInternalFunction;
 
 enum class FunctionHookType { kUnknown, kPre, kPost, kPreAndPost };
 enum class FunctionHookAbsorb { kUnknown, kDoNotAbsorb, kAbsorb };
@@ -23,7 +57,7 @@ class UFunctionHooks
 	class UFunctionHookInformation
 	{
 	public:
-		std::string	m_UFunctionAsString{};
+		std::string m_UFunctionAsString{};
 		UFunction* m_UFunction{};
 		UFunctionHookPrototype m_HookFunction{};
 		FunctionHookType m_HookType{ FunctionHookType::kUnknown };
@@ -32,7 +66,7 @@ class UFunctionHooks
 
 	class UFunctionHooksInformation
 	{
-	using Hooks = std::vector<UFunctionHookInformation>;
+		using Hooks = std::vector<UFunctionHookInformation>;
 
 	public:
 		Hooks m_PreHooks{};
@@ -137,3 +171,4 @@ private:
 };
 
 extern UFunctionHooks<ProcessEventPrototype> ProcessEventHooks;
+extern UFunctionHooks<ProcessInternalPrototype> ProcessInternalHooks;

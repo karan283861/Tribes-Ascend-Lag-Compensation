@@ -147,6 +147,9 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Hook.cpp" />
+    <ClCompile Include="LagCompensation.cpp" />
+    <ClCompile Include="ProcessEventHooks.cpp" />
+    <ClCompile Include="ProcessInternalHooks.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Core_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Engine_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\GameFramework_functions.cpp" />
@@ -163,6 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hook.hpp" />
+    <ClInclude Include="LagCompensation.hpp" />
+    <ClInclude Include="ProcessEventHooks.hpp" />
+    <ClInclude Include="ProcessInternalHooks.hpp" />
     <ClInclude Include="Tribes-Ascend-SDK\SdkHeaders.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_classes.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_f_structs.h" />

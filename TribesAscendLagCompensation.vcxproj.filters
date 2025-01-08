@@ -72,6 +72,15 @@
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\GameFramework_functions.cpp">
       <Filter>Source Files\Tribes-Ascend-SDK\SDK_SOURCES</Filter>
     </ClCompile>
+    <ClCompile Include="ProcessEventHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessInternalHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LagCompensation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hook.hpp">
@@ -196,6 +205,15 @@
     </ClInclude>
     <ClInclude Include="Tribes-Ascend-SDK\SdkHeaders.h">
       <Filter>Header Files\Tribes-Ascend-SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessEventHooks.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessInternalHooks.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LagCompensation.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
