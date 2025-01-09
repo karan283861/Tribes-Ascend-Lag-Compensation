@@ -1,6 +1,6 @@
 #include "LagCompensation.hpp"
 
-float Projectile::CollisionScalar = 1.0;
+float Projectile::CollisionScalar = 0.315;
 
 Projectile::Projectile(ATrProjectile* projectile) : m_GameProjectile(projectile)
 {
@@ -13,14 +13,14 @@ Projectile::Projectile(ATrProjectile* projectile) : m_GameProjectile(projectile)
 	auto pawn = reinterpret_cast<ATrPlayerPawn*>(projectile->Owner);
 	auto controller = reinterpret_cast<ATrPlayerController*>(projectile->Owner);
 
-	m_PingInMS = controller->PlayerReplicationInfo->ExactPing * 4 + 20;
+	m_PingInMS = controller->PlayerReplicationInfo->ExactPing * 4 + 200;
 }
 
 PlayerInformation::PlayerInformation(ATrPlayerPawn* pawn) : m_Pawn(pawn)
 {
 	//m_Controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
 	m_Location = pawn->Location;
-	m_Velocity = pawn->Velocity;
+	//m_Velocity = pawn->Velocity;
 }
 
 std::unordered_map<ATrProjectile*, Projectile> projectiles{};

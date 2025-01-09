@@ -23,7 +23,7 @@ void OnDLLProcessAttach()
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 	static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-	plog::init(plog::debug, &consoleAppender);
+	plog::init(plog::info, &consoleAppender);
 #endif
 	PLOG_INFO << "Successfully Injected DLL.";
 
