@@ -4,9 +4,15 @@
 #include "circularbuffer/circular_buffer.h"
 #include "Tribes-Ascend-SDK/SdkHeaders.h"
 
-static const float TickRate = 30.0;
-static const float TickDeltaInMS = 1000.0 / TickRate;
-static const float LagCompensationWindowInMs = 1000.0;
+#ifdef _DEBUG
+#define DEBUG_PING (1000.0)//(1000.0)
+#elif
+#define DEBUG_PING (0.0)
+#endif
+
+//static const float TickRate = 30.0;
+static const float TickDeltaInMS = 35;//1000.0 / TickRate;
+static const float LagCompensationWindowInMs = 2000.0;
 static const unsigned int LagCompensationBufferSize = (unsigned int)/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1;
 
 //using PlayerID = unsigned int;
@@ -14,11 +20,12 @@ static const unsigned int LagCompensationBufferSize = (unsigned int)/*ceil*/(Lag
 class Projectile
 {
 public:
-	//bool m_Valid{};
-	float m_SpawnTimestamp{};
+	bool m_Valid{ true };
+	//float m_Timestamp{};
 	ATrProjectile* m_GameProjectile{};
 	FVector m_PreviousLocation{};
 	FVector m_InitialVelocity{};
+	FVector m_InitialLocation{};
 	//bool m_IsArcing{};
 	float m_PingInMS{};
 	static float CollisionScalar;

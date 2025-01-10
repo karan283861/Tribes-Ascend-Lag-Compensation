@@ -146,6 +146,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="LagCompensation.cpp" />
     <ClCompile Include="ProcessEventHooks.cpp" />
@@ -163,8 +164,10 @@
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\UTGame_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\WinDrv_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\XAudio2_functions.cpp" />
+    <ClCompile Include="UnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Helper.hpp" />
     <ClInclude Include="Hook.hpp" />
     <ClInclude Include="LagCompensation.hpp" />
     <ClInclude Include="ProcessEventHooks.hpp" />
@@ -209,6 +212,7 @@
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_classes.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_f_structs.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_structs.h" />
+    <ClInclude Include="UnitTest.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

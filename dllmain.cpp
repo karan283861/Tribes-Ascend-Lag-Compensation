@@ -14,16 +14,17 @@
 #include "Hook.hpp"
 #include "ProcessEventHooks.hpp"
 #include "ProcessInternalHooks.hpp"
+#include "UnitTest.hpp"
 
 void OnDLLProcessAttach()
 {
 	auto base_address = reinterpret_cast<unsigned int>(GetModuleHandle(0));
 
 #ifndef PLOG_DISABLE_LOGGING
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-	static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-	plog::init(plog::info, &consoleAppender);
+	//AllocConsole();
+	//freopen("CONOUT$", "w", stdout);
+	static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
+	plog::init(plog::debug, &consoleAppender);
 #endif
 	PLOG_INFO << "Successfully Injected DLL.";
 
@@ -40,12 +41,15 @@ void OnDLLProcessAttach()
 							  FunctionHookType::kPost);
 	ProcessEventHooks.AddHook("Function TribesGame.TrProjectile.PostBeginPlay",
 							  TribesGame_TrProjectile_PostBeginPlay_Hook, FunctionHookType::kPost);
+	ProcessEventHooks.AddHook("Function TribesGame.TrHUD.PostRenderFor", TribesGame_TrHUD_PostRenderFor_Hook);
 	
 
 	ProcessInternalHooks = UFunctionHooks<ProcessInternalPrototype>(OriginalProcessInternalFunction);
 	ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.Explode",
 								 TribesGame_TrProjectile_Explode_Hook,
-								 FunctionHookType::kPost);
+								 FunctionHookType::kPre);
+
+	auto unitTestResult = PerformUnitTest();
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
