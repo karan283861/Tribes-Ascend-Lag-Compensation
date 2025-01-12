@@ -14,6 +14,7 @@
 #include "Hook.hpp"
 #include "ProcessEventHooks.hpp"
 #include "ProcessInternalHooks.hpp"
+#include "Helper.hpp"
 #include "UnitTest.hpp"
 
 void OnDLLProcessAttach()
@@ -28,10 +29,43 @@ void OnDLLProcessAttach()
 #endif
 	PLOG_INFO << "Successfully Injected DLL.";
 
+	auto unitTestResult = PerformUnitTest();
+
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach(&(PVOID&)OriginalProcessEventFunction, ProcessEventHook);
 	DetourAttach(&(PVOID&)OriginalProcessInternalFunction, ProcessInternalHook);
+	DetourAttach(&(PVOID&)OriginalCallFunctionFunction, CallFunctionHook);
+
+	//auto allUFunctions = GetInstancesUObjects<UFunction>();
+	//for (auto& ufunction : allUFunctions)
+	//{
+	//	//if (ufunction->iNative)
+	//	//{
+	//	//	PLOG_DEBUG << std::format("Hooking native: [{0}] {1} ({2})", ufunction->iNative, ufunction->GetFullName(),
+	//	//							  static_cast<void*>(ufunction->Func));
+	//	//	GNativeFunctionPrototype gNativeFunction = reinterpret_cast<GNativeFunctionPrototype>(ufunction->Func);
+	//	//	GNativeFunctionHookInformation gNativeFunctionHookInformation;
+	//	//	constexpr int i = __COUNTER__;
+	//	//	gNativeFunctionHookInformation.m_Index = i;
+	//	//	gNativeFunctionHookInformation.m_OriginalFunction = gNativeFunction;
+	//	//	DetourAttach(&(PVOID&)gNativeFunction, GNativeFunctionHook<i>);
+	//	//	//OriginalGNativeFunctionFromiNative[ufunction->iNative] = gNativeFunction;
+	//	//}
+
+	//	if (ufunction->iNative)
+	//	{
+	//		PLOG_DEBUG << std::format("Hooking native: [{0}] {1} ({2})", ufunction->iNative, ufunction->GetFullName(),
+	//								  static_cast<void*>(ufunction->Func));
+	//		GNativeFunctionPrototype gNativeFunction = reinterpret_cast<GNativeFunctionPrototype>(ufunction->Func);
+	//		//DetourAttach(&(PVOID&)gNativeFunction, GNativeFunctionHook);
+	//	}
+	//}
+
+	/*auto ufunction_Engine_Actor_SetLocation{ UObject::FindObject<UFunction>("Function Engine.Actor.SetLocation") };
+	GNativeFunctionPrototype gNativeFunction = reinterpret_cast<GNativeFunctionPrototype>(ufunction_Engine_Actor_SetLocation->Func);
+	DetourAttach(&(PVOID&)gNativeFunction, GNativeFunctionHook);*/
+
 	auto error = DetourTransactionCommit();
 
 	ProcessEventHooks = UFunctionHooks<ProcessEventPrototype>(OriginalProcessEventFunction);
@@ -39,17 +73,19 @@ void OnDLLProcessAttach()
 	ProcessEventHooks.AddHook("Function TribesGame.TrGameReplicationInfo.Tick",
 							  TribesGame_TrGameReplicationInfo_Tick_Hook,
 							  FunctionHookType::kPost);
-	ProcessEventHooks.AddHook("Function TribesGame.TrProjectile.PostBeginPlay",
-							  TribesGame_TrProjectile_PostBeginPlay_Hook, FunctionHookType::kPost);
 	ProcessEventHooks.AddHook("Function TribesGame.TrHUD.PostRenderFor", TribesGame_TrHUD_PostRenderFor_Hook);
 	
 
 	ProcessInternalHooks = UFunctionHooks<ProcessInternalPrototype>(OriginalProcessInternalFunction);
+	ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.InitProjectile",
+							  TribesGame_TrProjectile_InitProjectile_Hook, FunctionHookType::kPost);
 	ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.Explode",
 								 TribesGame_TrProjectile_Explode_Hook,
 								 FunctionHookType::kPre);
 
-	auto unitTestResult = PerformUnitTest();
+	CallFunctionHooks = UFunctionHooks<CallFunctionPrototype>(OriginalCallFunctionFunction);
+
+	//auto ufunction_Engine_Actor_Tick{ UObject::FindObject<UFunction>("Function Engine.Actor.Tick") };
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,

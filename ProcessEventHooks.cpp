@@ -1,3 +1,5 @@
+//#define NOMINMAX
+//#include <Windows.h>
 #include <format>
 #include <unordered_set>
 #include <vector>
@@ -134,6 +136,11 @@ void __fastcall TribesGame_TrGameReplicationInfo_Tick_Hook(UObject* CallingUObje
 		auto projectileAliveTime{ worldInfo->TimeSeconds - gameProjectile->CreationTime };
 		auto estimatedProjectileLocation{ uobject->Add_VectorVector(projectile.m_InitialLocation,
 																	uobject->Multiply_VectorFloat(gameProjectile->Velocity, projectileAliveTime)) };
+
+		PLOG_DEBUG << std::format("Projectile alive time = {0}", projectileAliveTime);
+		auto projectileTravelTime{ uobject->VSize2D(uobject->Subtract_VectorVector(gameProjectile->Location, projectile.m_InitialLocation)) /
+															   uobject->VSize2D(projectile.m_InitialVelocity)}; // only valid for non arc projectiles
+		PLOG_DEBUG << std::format("projectileTravelTimeInMS = {0}", projectileTravelTime);
 		//auto estimatedProjectileLocation{ gameProjectile->Location };
 
 		for (auto& [gamePawn, currentPlayerInformation] : lagCompensationTick.m_PawnToPlayerInformation)
@@ -336,36 +343,6 @@ void __fastcall TribesGame_TrGameReplicationInfo_Tick_Hook(UObject* CallingUObje
 	invalidProjectiles.clear();
 }
 
-void __fastcall TribesGame_TrProjectile_PostBeginPlay_Hook(UObject* CallingUObject,
-	void* Unused, UFunction* CallingUFunction,
-	void* Parameters, void* Result)
-{
-	if (isClient)
-		return;
-
-	PLOG_DEBUG << __FUNCTION__ << " called";
-	auto gameProjectile = reinterpret_cast<ATrProjectile*>(CallingUObject);
-	auto pawn = reinterpret_cast<ATrPlayerPawn*>(gameProjectile->Owner);
-	auto controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
-
-	if (gameProjectile->IsA(ATrProj_Tracer::StaticClass()) || gameProjectile->IsA(ATrProj_ClientTracer::StaticClass()) || !pawn->IsA(ATrPlayerPawn::StaticClass()))
-	{
-		PLOG_INFO << "Invalid projectile";
-		return;
-	}
-
-	Projectile projectile(gameProjectile);
-
-	if (projectile.m_PingInMS > LagCompensationWindowInMs)
-	{
-		PLOG_WARNING << "Projectile ping out of lag compensation window";
-		return;
-	}
-
-	projectiles.emplace(gameProjectile, projectile);
-}
-
-
 void __fastcall TribesGame_TrHUD_PostRenderFor_Hook(UObject* CallingUObject,
 													void* Unused, UFunction* CallingUFunction,
 													void* Parameters, void* Result)
@@ -378,6 +355,14 @@ void __fastcall TribesGame_TrHUD_PostRenderFor_Hook(UObject* CallingUObject,
 	if (!isClient)
 	{
 		isClient = true;
+		myPlayerController = playerController;
+		auto trGameEngines = GetInstancesUObjects<UTrGameEngine>();
+		// Client must be capped to (1000/35 (TickDeltaInMS)) fps to render properly
+		for (auto& gameEngine : trGameEngines)
+		{
+			gameEngine->bSmoothFrameRate = true;
+			gameEngine->MaxSmoothedFrameRate = (1000.0 / TickDeltaInMS);
+		}
 	}
 
 	if (!playerController->Pawn)

@@ -1,7 +1,8 @@
 #include <format>
 #include "Helper.hpp"
 
-bool isClient = false;
+bool isClient{ false };
+ATrPlayerController* myPlayerController{ nullptr };
 
 std::string FVectorToString(const FVector& vector)
 {
