@@ -87,6 +87,12 @@
     <ClCompile Include="UnitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NativeHooks.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NativeHooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hook.hpp">

@@ -3,6 +3,7 @@
 
 bool isClient{ false };
 ATrPlayerController* myPlayerController{ nullptr };
+UWorld* GWorld{ *reinterpret_cast<UWorld**>(GWORLD_ADDRESS) };
 
 std::string FVectorToString(const FVector& vector)
 {

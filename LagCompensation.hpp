@@ -3,15 +3,16 @@
 #include <plog/Log.h>
 #include "circularbuffer/circular_buffer.h"
 #include "Tribes-Ascend-SDK/SdkHeaders.h"
+#include "Helper.hpp"
 
 #ifdef _DEBUG
 #define DEBUG_PING (1000.0)//(1000.0)
-#elif
+#else
 #define DEBUG_PING (0.0)
 #endif
 
-//static const float TickRate = 30.0;
-static const float TickDeltaInMS = 35;//1000.0 / TickRate;
+static const float TickRate = 30.0;
+static const float TickDeltaInMS = 1000.0 / TickRate;
 static const float LagCompensationWindowInMs = 2000.0;
 static const unsigned int LagCompensationBufferSize = (unsigned int)/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1;
 
@@ -44,7 +45,7 @@ public:
 		return reinterpret_cast<ATrPlayerPawn*>(m_GameProjectile->Owner);
 	}
 
-	ATrPlayerController* GetOwningController(void)
+	ATrPlayerController* GdetOwningController(void)
 	{
 		IF_PLOG(plog::error)
 		{
@@ -90,7 +91,21 @@ class LagCompensationTick
 public:
 	float m_Timestamp{};
 	std::unordered_map<ATrPlayerPawn*, PlayerInformation> m_PawnToPlayerInformation{};
+	std::unordered_map<ATrPlayerPawn*, FVector> m_PawnToLocation;
 };
 
 extern std::unordered_map<ATrProjectile*, Projectile> projectiles;
+extern std::unordered_map<ATrProjectile*, float> projectileToPingInMS;
 extern CircularBuffer<LagCompensationTick> lagCompensationBuffer;
+extern std::unordered_map<ATrPlayerPawn*, FVector> pawnToLocation;
+
+
+LagCompensationTick* GetLagCompensationTick(float PingInMS);
+LagCompensationTick* GetPreviousLagCompensationTick(float PingInMS);
+
+FVector GetInterpolatedLocationOfPawn(LagCompensationTick* lagCompensationTick, LagCompensationTick* previousLagCompensationTick,
+									  float PingInMS, ATrPlayerPawn* Pawn);
+
+void MovePawns(float PingInMS);
+
+void RestorePawns(float PingInMS);

@@ -149,6 +149,8 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="LagCompensation.cpp" />
+    <ClCompile Include="NativeHooks.cpp" />
+    <ClCompile Include="NativeHooks.hpp" />
     <ClCompile Include="ProcessEventHooks.cpp" />
     <ClCompile Include="ProcessInternalHooks.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Core_functions.cpp" />

@@ -8,3 +8,7 @@ void __fastcall TribesGame_TrProjectile_InitProjectile_Hook(UObject* CallingUObj
 void __fastcall TribesGame_TrProjectile_Explode_Hook(UObject* CallingUObject,
 													 void* Unused, FFrame& Stack,
 													 void* Result);
+
+void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
+													  void* Unused, FFrame& Stack,
+													  void* Result);

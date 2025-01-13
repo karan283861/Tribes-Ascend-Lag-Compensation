@@ -31,6 +31,16 @@ void __fastcall TribesGame_TrProjectile_InitProjectile_Hook(UObject* CallingUObj
 	}
 
 	projectiles.emplace(gameProjectile, projectile);
+
+	auto pingInMS = controller->PlayerReplicationInfo->ExactPing * 4;
+#ifdef _DEBUG
+	if (DEBUG_PING != 0)
+	{
+		pingInMS = DEBUG_PING;
+	}
+#endif
+
+	projectileToPingInMS.emplace(gameProjectile, pingInMS);
 }
 
 void __fastcall TribesGame_TrProjectile_Explode_Hook(UObject* CallingUObject,
@@ -46,4 +56,39 @@ void __fastcall TribesGame_TrProjectile_Explode_Hook(UObject* CallingUObject,
 		projectiles.at(gameProjectile).m_Valid = false;
 	}
 	//projectiles.erase(gameProjectile);
+}
+
+void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
+													  void* Unused, FFrame& Stack,
+													  void* Result)
+{
+	if (isClient)
+	{
+		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+	}
+
+
+	auto gameProjectile{ reinterpret_cast<ATrProjectile*>(CallingUObject) };
+	auto pawn = reinterpret_cast<ATrPlayerPawn*>(gameProjectile->Owner);
+	auto controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
+
+	auto pingInMS{ controller->PlayerReplicationInfo->ExactPing * 4 };
+#ifdef _DEBUG
+	if (DEBUG_PING != 0)
+	{
+		pingInMS = DEBUG_PING;
+	}
+#endif
+
+	auto lagCompensationTick = GetLagCompensationTick(pingInMS);
+	auto previousLagCompensationTick = GetPreviousLagCompensationTick(pingInMS);
+	if (lagCompensationTick && previousLagCompensationTick)
+	{
+		MovePawns(pingInMS);
+		OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+		RestorePawns(pingInMS);
+		return;
+	}
+
+	return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
 }

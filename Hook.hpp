@@ -5,7 +5,7 @@
 #include <plog/Log.h>
 #include "Tribes-Ascend-SDK/SdkHeaders.h"
 
-#define GNATIVES (0x01328C40);
+//#define GNATIVES (0x01328C40);
 
 //
 // Function flags.
@@ -102,17 +102,20 @@ void __fastcall ProcessInternalHook(UObject* CallingUObject,
 extern ProcessInternalPrototype OriginalProcessInternalFunction;
 
 using CallFunctionPrototype = void(__fastcall*)(UObject* CallingUObject,
-												   void* Unused, FFrame& Stack,
-												   void* Result, UFunction* CallingUFunction);
+												void* Unused, FFrame& Stack,
+												void* Result, UFunction* CallingUFunction);
 
 void __fastcall CallFunctionHook(UObject* CallingUObject,
-									void* Unused, FFrame& Stack,
-									void* Result, UFunction* CallingUFunction);
+								 void* Unused, FFrame& Stack,
+								 void* Result, UFunction* CallingUFunction);
 
 extern CallFunctionPrototype OriginalCallFunctionFunction;
 
-using GNativeFunctionPrototype = void(__fastcall*)(UObject* CallingUObject,
-												   void* Unused, FFrame& Stack,
+//using GNativeFunctionPrototype = void(__fastcall*)(UObject* CallingUObject,
+//												   void* Unused, FFrame& Stack,
+//												   void* Result);
+
+using GNativeFunctionPrototype = void(__fastcall*)(FFrame& Stack, void* Unused,
 												   void* Result);
 
 //struct GNativeFunctionHookInformation
@@ -139,9 +142,9 @@ using GNativeFunctionPrototype = void(__fastcall*)(UObject* CallingUObject,
 //	func(std::forward<Args>(args)...);
 //}
 
-void __fastcall GNativeFunctionHook(UObject* CallingUObject,
-									void* Unused, FFrame& Stack,
-									void* Result);
+//void __fastcall GNativeFunctionHook(UObject* CallingUObject,
+//									void* Unused, FFrame& Stack,
+//									void* Result);
 
 extern std::unordered_map<unsigned short, GNativeFunctionPrototype> OriginalGNativeFunctionFromiNative;
 
