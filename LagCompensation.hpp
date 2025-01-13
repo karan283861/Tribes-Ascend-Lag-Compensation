@@ -6,7 +6,7 @@
 #include "Helper.hpp"
 
 #ifdef _DEBUG
-#define DEBUG_PING (1000.0)//(1000.0)
+#define DEBUG_PING (0.0)//(1000.0)
 #else
 #define DEBUG_PING (0.0)
 #endif

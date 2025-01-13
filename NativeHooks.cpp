@@ -58,16 +58,21 @@ bool __fastcall UWorld_MoveActor_Hook(UWorld* World, void* Unused,
 		}
 
 		auto gameProjectile{ reinterpret_cast<ATrProjectile*>(Actor) };
-		auto pawn = reinterpret_cast<ATrPlayerPawn*>(gameProjectile->Owner);
-		auto controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
+		auto controller{ GetProjectileOwner(gameProjectile) };
 
-		if (!pawn->IsA(ATrPlayerPawn::StaticClass()) || !controller->IsA(ATrPlayerController::StaticClass()))
+		if (!controller)
 		{
 			PLOG_ERROR << "Projectile is not owned by a player";
 			return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
 		}
 
-		auto pingInMS{ controller->PlayerReplicationInfo->ExactPing * 4 };
+		auto pingInMS{ GetProjectilePingInMS(gameProjectile)};
+		if (pingInMS < 0)
+		{
+			PLOG_ERROR << "Projectile controller ping is invalid";
+			return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
+		}
+
 #ifdef _DEBUG
 		if (DEBUG_PING != 0)
 		{

@@ -67,12 +67,22 @@ void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
 		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
 	}
 
-
 	auto gameProjectile{ reinterpret_cast<ATrProjectile*>(CallingUObject) };
-	auto pawn = reinterpret_cast<ATrPlayerPawn*>(gameProjectile->Owner);
-	auto controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
+	auto controller{ GetProjectileOwner(gameProjectile) };
 
-	auto pingInMS{ controller->PlayerReplicationInfo->ExactPing * 4 };
+	if (!controller)
+	{
+		PLOG_ERROR << "Projectile is not owned by a player";
+		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+	}
+
+	auto pingInMS{ GetProjectilePingInMS(gameProjectile) };
+	if (pingInMS < 0)
+	{
+		PLOG_ERROR << "Projectile controller ping is invalid";
+		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+	}
+
 #ifdef _DEBUG
 	if (DEBUG_PING != 0)
 	{
@@ -84,7 +94,19 @@ void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
 	auto previousLagCompensationTick = GetPreviousLagCompensationTick(pingInMS);
 	if (lagCompensationTick && previousLagCompensationTick)
 	{
+		auto playerPawn{ reinterpret_cast<ATrPlayerPawn*>(controller->Pawn) };
+		auto playerPawnIsValid{ IsPawnValid(playerPawn) };
+		FVector playerPawnLocation{};
+
+		if (playerPawnIsValid)
+		{
+			playerPawnLocation = playerPawn->Location;
+		}
 		MovePawns(pingInMS);
+		if (playerPawnIsValid)
+		{
+			playerPawn->SetLocation(playerPawnLocation);
+		}
 		OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
 		RestorePawns(pingInMS);
 		return;

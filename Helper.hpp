@@ -26,6 +26,25 @@ inline bool IsPawnValid(ATrPlayerPawn* pawn)
 	return false;
 }
 
+inline ATrPlayerController* GetProjectileOwner(ATrProjectile* Projectile)
+{
+	if (Projectile->InstigatorController && Projectile->InstigatorController->IsA(ATrPlayerController::StaticClass()))
+	{
+		return reinterpret_cast<ATrPlayerController*>(Projectile->InstigatorController);
+	}
+	return nullptr;
+}
+
+inline float GetProjectilePingInMS(ATrProjectile* Projectile)
+{
+	auto controller{ GetProjectileOwner(Projectile) };
+	if (controller)
+	{
+		return controller->PlayerReplicationInfo->ExactPing * 4;
+	}
+	return -1;
+}
+
 template< class T >
 std::vector<T*> GetInstancesUObjects(void)
 {
