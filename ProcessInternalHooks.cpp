@@ -1,116 +1,61 @@
 #include <format>
 #include <plog/Log.h>
 #include "ProcessInternalHooks.hpp"
+#include "LagCompensation.hpp"
 #include "Helper.hpp"
 
-void __fastcall TribesGame_TrProjectile_InitProjectile_Hook(UObject* CallingUObject,
-															void* Unused, FFrame& Stack,
-															void* Result)
-{
-	PLOG_DEBUG << __FUNCTION__ << " called";
-
-	auto gameProjectile = reinterpret_cast<ATrProjectile*>(CallingUObject);
-	auto pawn = reinterpret_cast<ATrPlayerPawn*>(gameProjectile->Owner);
-	auto controller = reinterpret_cast<ATrPlayerController*>(pawn->Owner);
-
-	if (isClient && controller != myPlayerController)
-		return;
-
-	if (gameProjectile->IsA(ATrProj_Tracer::StaticClass()) || gameProjectile->IsA(ATrProj_ClientTracer::StaticClass()) || !pawn->IsA(ATrPlayerPawn::StaticClass()))
-	{
-		PLOG_INFO << "Invalid projectile";
-		return;
-	}
-
-	Projectile projectile(gameProjectile);
-
-	if (projectile.m_PingInMS > LagCompensationWindowInMs)
-	{
-		PLOG_WARNING << "Projectile ping out of lag compensation window";
-		return;
-	}
-
-	projectiles.emplace(gameProjectile, projectile);
-
-	auto pingInMS = controller->PlayerReplicationInfo->ExactPing * 4;
-#ifdef _DEBUG
-	if (DEBUG_PING != 0)
-	{
-		pingInMS = DEBUG_PING;
-	}
-#endif
-
-	projectileToPingInMS.emplace(gameProjectile, pingInMS);
-}
-
-void __fastcall TribesGame_TrProjectile_Explode_Hook(UObject* CallingUObject,
-													 void* Unused, FFrame& Stack,
-													 void* Result)
-{
-	PLOG_DEBUG << __FUNCTION__ << " called";
-	/*if (isClient)
-	return;*/
-	auto gameProjectile = reinterpret_cast<ATrProjectile*>(CallingUObject);
-	if (projectiles.find(gameProjectile) != projectiles.end())
-	{
-		projectiles.at(gameProjectile).m_Valid = false;
-	}
-	//projectiles.erase(gameProjectile);
-}
-
 void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
-													  void* Unused, FFrame& Stack,
-													  void* Result)
+                                                      void* Unused,
+                                                      FFrame& Stack,
+                                                      void* Result)
 {
-	if (isClient)
-	{
-		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
-	}
+    PLOG_DEBUG << __FUNCTION__;
 
-	auto gameProjectile{ reinterpret_cast<ATrProjectile*>(CallingUObject) };
-	auto controller{ GetProjectileOwner(gameProjectile) };
+    // The logic here is the same as the UWorld::MoveActor hook for a projectile
+    // with one exception
 
-	if (!controller)
-	{
-		PLOG_ERROR << "Projectile is not owned by a player";
-		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
-	}
+    auto gameProjectile{ reinterpret_cast<ATrProjectile*>(CallingUObject) };
+    auto controller{ GetProjectileController(gameProjectile) };
 
-	auto pingInMS{ GetProjectilePingInMS(gameProjectile) };
-	if (pingInMS < 0)
-	{
-		PLOG_ERROR << "Projectile controller ping is invalid";
-		return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
-	}
+    if (!controller)
+    {
+        // The controller of the projectile is not a player controller
+        return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+    }
 
-#ifdef _DEBUG
-	if (DEBUG_PING != 0)
-	{
-		pingInMS = DEBUG_PING;
-	}
-#endif
+    auto pingInMS{ GetProjectilePingInMS(gameProjectile) };
+    if (pingInMS < 0)
+    {   // This should only happen if the controller of the projectile is not a player controller
+        // or if something went very wrong...
+        return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+    }
 
-	auto lagCompensationTick = GetLagCompensationTick(pingInMS);
-	auto previousLagCompensationTick = GetPreviousLagCompensationTick(pingInMS);
-	if (lagCompensationTick && previousLagCompensationTick)
-	{
-		auto playerPawn{ reinterpret_cast<ATrPlayerPawn*>(controller->Pawn) };
-		auto playerPawnIsValid{ IsPawnValid(playerPawn) };
-		FVector playerPawnLocation{};
+    auto lagCompensationTick{ GetLagCompensationTick(pingInMS) };
+    auto previousLagCompensationTick{ GetPreviousLagCompensationTick(pingInMS) };
+    if (lagCompensationTick && previousLagCompensationTick)
+    {
+        // The exception : We do not want to rewind the owning player of the projectile
+        // as this will mess with disc jumps/impulse damage
+        auto playerPawn{ reinterpret_cast<ATrPlayerPawn*>(controller->Pawn) };
+        auto playerPawnIsValid{ IsPawnValid(playerPawn) };
+        // Store the location of the owning player of the projectile
+        FVector playerPawnLocation{};
 
-		if (playerPawnIsValid)
-		{
-			playerPawnLocation = playerPawn->Location;
-		}
-		MovePawns(pingInMS);
-		if (playerPawnIsValid)
-		{
-			playerPawn->SetLocation(playerPawnLocation);
-		}
-		OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
-		RestorePawns(pingInMS);
-		return;
-	}
+        if (playerPawnIsValid)
+        {
+            playerPawnLocation = playerPawn->Location;
+        }
+        RewindPlayers(pingInMS);
+        if (playerPawnIsValid)
+        {
+            // After rewinding, restore the owning player of the projectile to its latest state
+            playerPawn->SetLocation(playerPawnLocation);
+        }
+        // Apply radial damage
+        OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+        RestorePlayers(pingInMS);
+        return;
+    }
 
-	return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+    return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
 }

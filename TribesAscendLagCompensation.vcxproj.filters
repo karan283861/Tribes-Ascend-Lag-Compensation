@@ -84,9 +84,6 @@
     <ClCompile Include="Helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UnitTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NativeHooks.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
@@ -228,9 +225,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Helper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UnitTest.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

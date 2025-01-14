@@ -1,14 +1,8 @@
+#pragma once
+
 #include "Hook.hpp"
-#include "LagCompensation.hpp"
-
-void __fastcall TribesGame_TrProjectile_InitProjectile_Hook(UObject* CallingUObject,
-															void* Unused, FFrame& Stack,
-															void* Result);
-
-void __fastcall TribesGame_TrProjectile_Explode_Hook(UObject* CallingUObject,
-													 void* Unused, FFrame& Stack,
-													 void* Result);
+#include "Tribes-Ascend-SDK/SdkHeaders.h"
 
 void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
-													  void* Unused, FFrame& Stack,
-													  void* Result);
+                                                      void* Unused, FFrame& Stack,
+                                                      void* Result);

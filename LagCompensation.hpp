@@ -1,111 +1,40 @@
 #include <unordered_map>
-#include <format>
-#include <plog/Log.h>
 #include "circularbuffer/circular_buffer.h"
 #include "Tribes-Ascend-SDK/SdkHeaders.h"
-#include "Helper.hpp"
 
+// If we're in a debug build and DEBUG_PING is non zero then use DEBUG_PING as the
+// ping value. Obviously DEBUG_PING must be greater than zero, and less than
+// LagCompensationWindowInMs otherwise the projectile will not be in the lag compensation buffer
 #ifdef _DEBUG
-#define DEBUG_PING (0.0)//(1000.0)
-#else
-#define DEBUG_PING (0.0)
+#define DEBUG_PING (300.0)
 #endif
 
-static const float TickRate = 30.0;
-static const float TickDeltaInMS = 1000.0 / TickRate;
-static const float LagCompensationWindowInMs = 2000.0;
-static const unsigned int LagCompensationBufferSize = (unsigned int)/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1;
-
-//using PlayerID = unsigned int;
-
-class Projectile
-{
-public:
-	bool m_Valid{ true };
-	//float m_Timestamp{};
-	ATrProjectile* m_GameProjectile{};
-	FVector m_PreviousLocation{};
-	FVector m_InitialVelocity{};
-	FVector m_InitialLocation{};
-	//bool m_IsArcing{};
-	float m_PingInMS{};
-	static float CollisionScalar;
-
-	Projectile(ATrProjectile* projectile);
-	
-	ATrPlayerPawn* GetOwningPawn(void)
-	{
-		IF_PLOG(plog::error)
-		{
-			if (!m_GameProjectile->Owner)
-			{
-				PLOG_ERROR << std::format("{0}: Projectile owning pawn is null", static_cast<void*>(m_GameProjectile));
-			}
-		}
-		return reinterpret_cast<ATrPlayerPawn*>(m_GameProjectile->Owner);
-	}
-
-	ATrPlayerController* GdetOwningController(void)
-	{
-		IF_PLOG(plog::error)
-		{
-			if (!GetOwningPawn()->Owner)
-			{
-				PLOG_ERROR << std::format("{0}: Projectile owning controller is null", static_cast<void*>(m_GameProjectile));
-			}
-		}
-		return reinterpret_cast<ATrPlayerController*>(GetOwningPawn()->Owner);
-	}
-};
-
-class PlayerInformation
-{
-public:
-	ATrPlayerPawn* m_Pawn{};
-	//ATrPlayerController* m_Controller{};
-	FVector m_Location{};
-	//FVector m_Velocity{};
-
-	PlayerInformation(ATrPlayerPawn* pawn);
-
-	unsigned int GetID(void)
-	{
-		return m_Pawn->PlayerReplicationInfo->UniqueId.Uid.A;
-	}
-
-	ATrPlayerController* GetOwningController(void)
-	{
-		IF_PLOG(plog::error)
-		{
-			if (!m_Pawn->Owner)
-			{
-				PLOG_ERROR << std::format("{0}: Pawn owning controller is null", static_cast<void*>(m_Pawn));
-			}
-		}
-		return reinterpret_cast<ATrPlayerController*>(m_Pawn->Owner);
-	}
-};
+// Hardcoded tick rate - This can be modified but for now we'll use the default value of 30
+static const float TickRate{ 30.0 };
+static const float TickDeltaInMS{ 1000.0 / TickRate };
+static const float LagCompensationWindowInMs{ 2000.0 };
+static const unsigned int LagCompensationBufferSize{ static_cast<unsigned int>(/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1) };
 
 class LagCompensationTick
 {
 public:
-	float m_Timestamp{};
-	std::unordered_map<ATrPlayerPawn*, PlayerInformation> m_PawnToPlayerInformation{};
-	std::unordered_map<ATrPlayerPawn*, FVector> m_PawnToLocation;
+    // Map the location of each pawn in this tick
+    std::unordered_map<ATrPlayerPawn*, FVector> m_PlayerToLocation{};
 };
 
-extern std::unordered_map<ATrProjectile*, Projectile> projectiles;
-extern std::unordered_map<ATrProjectile*, float> projectileToPingInMS;
+// The lag compesation buffer - every tick it stores the states players alive in said tick
 extern CircularBuffer<LagCompensationTick> lagCompensationBuffer;
-extern std::unordered_map<ATrPlayerPawn*, FVector> pawnToLocation;
-
-
+// Store the latest (0 ping) lag compensation tick
+extern LagCompensationTick latestLagCompensationTick;
+// Get a pointer to the lag compensation tick corresponding to the parameter ping
+// Assuming the ping is valid, then the returned lag compensation tick object will have a ping
+// less than (by a maximum of TickDeltaMS) or equal to the parameter ping
 LagCompensationTick* GetLagCompensationTick(float PingInMS);
+// Get a pointer to the previous lag compensation tick corresponding to the parameter ping
+// Assuming the ping is valid, then the returned lag compensation tick object will have a ping
+// greater than (by a maximum of TickDeltaMS) or equal to the parameter ping
 LagCompensationTick* GetPreviousLagCompensationTick(float PingInMS);
-
-FVector GetInterpolatedLocationOfPawn(LagCompensationTick* lagCompensationTick, LagCompensationTick* previousLagCompensationTick,
-									  float PingInMS, ATrPlayerPawn* Pawn);
-
-void MovePawns(float PingInMS);
-
-void RestorePawns(float PingInMS);
+// Move players back in time depending on the ping of a projectile
+void RewindPlayers(float PingInMS);
+// Move players forward in time to their location corresponding to latest tick
+void RestorePlayers(float PingInMS);

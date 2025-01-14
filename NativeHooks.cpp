@@ -5,113 +5,89 @@
 #include "LagCompensation.hpp"
 #include "Helper.hpp"
 
-static auto projectileMoved{ false };
-static AWorldInfo* worldInfo{ nullptr };
-static LagCompensationTick latestLagCompensationTick{};
+// During an engine tick, MoveActor is called for all actors
+// In this case, projectiles are moved after all players have been moved
+// This boolean is used to report if MoveActor is called on a projectile
+// meaning all players have finished moving
+static auto playersMoved{ false };
 
-AActorMovePrototype OriginalAActorMove = reinterpret_cast<AActorMovePrototype>(MOVEACTOR_ADDRESS);
-bool __fastcall AActor_Move_Hook(AActor* Actor, void* Unused, FVector Delta)
-{
-	PLOG_DEBUG << Actor->GetFullName();
-	return OriginalAActorMove(Actor, Unused, Delta);
-}
-
-AActorSetLocationPrototype OriginalAActorSetLocation = reinterpret_cast<AActorSetLocationPrototype>(SETLOCATION_ADDRESS);
-bool __fastcall AActor_SetLocation_Hook(AActor* Actor, void* Unused, FVector NewLocation)
-{
-	PLOG_DEBUG << Actor->GetFullName();
-	return OriginalAActorSetLocation(Actor, Unused, NewLocation);
-}
-
-extern UWorldMoveActorPrototype OriginalUWorldMoveActor = reinterpret_cast<UWorldMoveActorPrototype>(UWORLD_MOVEACTOR_ADDRESS);
+UWorldMoveActorPrototype OriginalUWorldMoveActor = reinterpret_cast<UWorldMoveActorPrototype>(UWORLD_MOVEACTOR_ADDRESS);
 bool __fastcall UWorld_MoveActor_Hook(UWorld* World, void* Unused,
-									   AActor* Actor,
-									   const FVector& Delta,
-									   const FRotator& NewRotation,
-									   unsigned int			MoveFlags,
-									   int& Hit)
+                                      AActor* Actor,
+                                      const FVector& Delta,
+                                      const FRotator& NewRotation,
+                                      unsigned int MoveFlags,
+                                      FCheckHitResult& Hit)
 {
-	if (isClient)
-	{
-		return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
-	}
+    PLOG_DEBUG << __FUNCTION__;
 
-	PLOG_DEBUG << Actor->GetFullName();
+    if (Actor->IsA(ATrPlayerPawn::StaticClass()))
+    {
+        // Move the player
+        auto returnValue{ OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit) };
+        auto playerPawn{ reinterpret_cast<ATrPlayerPawn*>(Actor) };
+        // Save the latest player state into the latest lag compensation tick
+        // MoveActor may be called multiple times so we want to insert of assign in case
+        // the player and player state is already mapped
+        latestLagCompensationTick.m_PlayerToLocation.insert_or_assign(playerPawn, playerPawn->Location);
+        return returnValue;
+    }
+    else if (Actor->IsA(ATrProjectile::StaticClass()))
+    {
+        if (!playersMoved)
+        {
+            // All players have been moved
+            // Populate the lag compensation buffer with the latest lag compensation tick
+            // to get the 0 ping states of players
+            playersMoved = true;
+            lagCompensationBuffer.push_back(latestLagCompensationTick);
+        }
 
-	if (Actor->IsA(ATrPlayerPawn::StaticClass()))
-	{
-		auto returnValue{ OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit) };
-		auto pawn = reinterpret_cast<ATrPlayerPawn*>(Actor);
-		latestLagCompensationTick.m_PawnToLocation.insert_or_assign(pawn, pawn->Location);
-		pawnToLocation.insert_or_assign(pawn, pawn->Location);
-		//PLOG_DEBUG << std::format("Location\t{0}", FVectorToString(pawn->Location));
-		//PLOG_DEBUG << std::format("Delta\t{0}", FVectorToString(Delta));
-		return returnValue;
-	}
-	else if (Actor->IsA(ATrProjectile::StaticClass()))
-	{
-		/*auto valid{ true };*/
-		if (!projectileMoved)
-		{
-			projectileMoved = true;
-			lagCompensationBuffer.push_back(latestLagCompensationTick);
-		}
+        auto gameProjectile{ reinterpret_cast<ATrProjectile*>(Actor) };
 
-		auto gameProjectile{ reinterpret_cast<ATrProjectile*>(Actor) };
-		auto controller{ GetProjectileOwner(gameProjectile) };
+        auto pingInMS{ GetProjectilePingInMS(gameProjectile) };
+        if (pingInMS < 0)
+        {
+            // This should only happen if the controller of the projectile is not a player controller
+            // or if something went very wrong...
+            return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
+        }
 
-		if (!controller)
-		{
-			PLOG_ERROR << "Projectile is not owned by a player";
-			return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
-		}
+        auto lagCompensationTick{ GetLagCompensationTick(pingInMS) };
+        auto previousLagCompensationTick{ GetPreviousLagCompensationTick(pingInMS) };
+        if (lagCompensationTick && previousLagCompensationTick)
+        {
+            // Everything seems ok - We have a valid ping and two ticks the projectile is between
+            // Move players back in time
+            RewindPlayers(pingInMS);
+            // Now move the projectile
+            auto returnValue{ OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit) };
+            // Restore the players to their latest positions
+            RestorePlayers(pingInMS);
+            return returnValue;
+        }
+    }
 
-		auto pingInMS{ GetProjectilePingInMS(gameProjectile)};
-		if (pingInMS < 0)
-		{
-			PLOG_ERROR << "Projectile controller ping is invalid";
-			return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
-		}
-
-#ifdef _DEBUG
-		if (DEBUG_PING != 0)
-		{
-			pingInMS = DEBUG_PING;
-		}
-#endif
-
-		auto lagCompensationTick = GetLagCompensationTick(pingInMS);
-		auto previousLagCompensationTick = GetPreviousLagCompensationTick(pingInMS);
-		if (lagCompensationTick && previousLagCompensationTick)
-		{
-			MovePawns(pingInMS);
-			auto returnValue{ OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit) };
-			RestorePawns(pingInMS);
-			return returnValue;
-		}
-	}
-	
-	return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
+    return OriginalUWorldMoveActor(World, Unused, Actor, Delta, NewRotation, MoveFlags, Hit);
 }
 
-extern UGameEngineTickPrototype OriginalUGameEngineTick = reinterpret_cast<UGameEngineTickPrototype>(UGAMEENGINE_TICK_ADDRESS);
+UGameEngineTickPrototype OriginalUGameEngineTick = reinterpret_cast<UGameEngineTickPrototype>(UGAMEENGINE_TICK_ADDRESS);
 void __fastcall UGameEngine_Tick_Hook(UGameEngine* GameEngine, void* Unused, float DeltaSeconds)
 {
-	PLOG_DEBUG << std::format("GameEngine = {0}", static_cast<void*>(GameEngine));
-	projectileMoved = false;
-	pawnToLocation.clear();
-	latestLagCompensationTick = LagCompensationTick();
-	worldInfo = GameEngine->GetCurrentWorldInfo();
-	OriginalUGameEngineTick(GameEngine, Unused, DeltaSeconds);
-	if (!projectileMoved && !isClient)
-	{
-		lagCompensationBuffer.push_back(latestLagCompensationTick);
-	}
-}
-
-extern UWorldTickPrototype OriginalUWorldTick = reinterpret_cast<UWorldTickPrototype>(UWORLD_TICK_ADDRESS);
-void __fastcall UWorld_Tick_Hook(UWorld* World, void* Unused, unsigned int TickType, float DeltaSeconds)
-{
-	PLOG_DEBUG << std::format("World = {0}", static_cast<void*>(World));
-	return OriginalUWorldTick(World, Unused, TickType, DeltaSeconds);
+    PLOG_DEBUG << __FUNCTION__;
+    // Fresh engine tick
+    // No projectiles have moved
+    playersMoved = false;
+    // Clear latest lag compensation tick
+    latestLagCompensationTick = LagCompensationTick();
+    // Call engine tick, which calls MoveActor which will populate latestLagCompensationTick
+    OriginalUGameEngineTick(GameEngine, Unused, DeltaSeconds);
+    if (!playersMoved)
+    {
+        // MoveActor for a projectile was not called in this engine tick
+        // This means playersMoved is still false, however players
+        // would still have moved. Populate the lag compensation buffer
+        // with the latest lag compensation tick to get the 0 ping states of players
+        lagCompensationBuffer.push_back(latestLagCompensationTick);
+    }
 }

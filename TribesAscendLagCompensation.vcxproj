@@ -151,7 +151,10 @@
     <ClCompile Include="LagCompensation.cpp" />
     <ClCompile Include="NativeHooks.cpp" />
     <ClCompile Include="NativeHooks.hpp" />
-    <ClCompile Include="ProcessEventHooks.cpp" />
+    <ClCompile Include="ProcessEventHooks.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ProcessInternalHooks.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Core_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Engine_functions.cpp" />
@@ -166,13 +169,15 @@
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\UTGame_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\WinDrv_functions.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\XAudio2_functions.cpp" />
-    <ClCompile Include="UnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helper.hpp" />
     <ClInclude Include="Hook.hpp" />
     <ClInclude Include="LagCompensation.hpp" />
-    <ClInclude Include="ProcessEventHooks.hpp" />
+    <ClInclude Include="ProcessEventHooks.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="ProcessInternalHooks.hpp" />
     <ClInclude Include="Tribes-Ascend-SDK\SdkHeaders.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\Core_classes.h" />
@@ -214,7 +219,6 @@
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_classes.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_f_structs.h" />
     <ClInclude Include="Tribes-Ascend-SDK\SDK_HEADERS\XAudio2_structs.h" />
-    <ClInclude Include="UnitTest.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

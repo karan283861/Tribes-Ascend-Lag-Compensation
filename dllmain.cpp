@@ -3,12 +3,14 @@
 
 #include "Detours/include/detours.h"
 
+#include <format>
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
+#include <plog/Appenders/RollingFileAppender.h>
 #ifndef _DEBUG
-#define PLOG_DISABLE_LOGGING
+//#define PLOG_DISABLE_LOGGING
 #endif
 
 #include "Hook.hpp"
@@ -16,109 +18,70 @@
 #include "ProcessInternalHooks.hpp"
 #include "NativeHooks.hpp"
 #include "Helper.hpp"
-#include "UnitTest.hpp"
 
 void OnDLLProcessAttach()
 {
-	auto baseAddress = reinterpret_cast<unsigned int>(GetModuleHandle(0));
+    auto baseAddress{ reinterpret_cast<unsigned int>(GetModuleHandle(0)) };
 
-#ifndef PLOG_DISABLE_LOGGING
-	//AllocConsole();
-	//freopen("CONOUT$", "w", stdout);
-	static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-	plog::init(plog::verbose, &consoleAppender);
+#ifdef _DEBUG
+    //AllocConsole();
+    //freopen("CONOUT$", "w", stdout);
+    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
+    plog::init(plog::debug, &consoleAppender);
+#else
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("LagCompensationLog.txt");
+    plog::init(plog::warning, &fileAppender);
 #endif
-	PLOG_INFO << "Successfully Injected DLL.";
-	PLOG_INFO << std::format("Base address: {0}", reinterpret_cast<void*>(baseAddress));
+    PLOG_INFO << "Successfully Injected DLL.";
+    PLOG_INFO << std::format("Base address: {0}", reinterpret_cast<void*>(baseAddress));
 
-	auto unitTestResult = PerformUnitTest();
+    DetourTransactionBegin();
+    DetourUpdateThread(GetCurrentThread());
 
-	DetourTransactionBegin();
-	DetourUpdateThread(GetCurrentThread());
-	DetourAttach(&(PVOID&)OriginalProcessEventFunction, ProcessEventHook);
-	DetourAttach(&(PVOID&)OriginalProcessInternalFunction, ProcessInternalHook);
-	//DetourAttach(&(PVOID&)OriginalCallFunctionFunction, CallFunctionHook);
+#ifdef _DEBUG
+    DetourAttach(&(PVOID&)OriginalProcessEventFunction, ProcessEventHook);
+#endif
 
-	//auto allUFunctions = GetInstancesUObjects<UFunction>();
-	//for (auto& ufunction : allUFunctions)
-	//{
-	//	//if (ufunction->iNative)
-	//	//{
-	//	//	PLOG_DEBUG << std::format("Hooking native: [{0}] {1} ({2})", ufunction->iNative, ufunction->GetFullName(),
-	//	//							  static_cast<void*>(ufunction->Func));
-	//	//	GNativeFunctionPrototype gNativeFunction = reinterpret_cast<GNativeFunctionPrototype>(ufunction->Func);
-	//	//	GNativeFunctionHookInformation gNativeFunctionHookInformation;
-	//	//	constexpr int i = __COUNTER__;
-	//	//	gNativeFunctionHookInformation.m_Index = i;
-	//	//	gNativeFunctionHookInformation.m_OriginalFunction = gNativeFunction;
-	//	//	DetourAttach(&(PVOID&)gNativeFunction, GNativeFunctionHook<i>);
-	//	//	//OriginalGNativeFunctionFromiNative[ufunction->iNative] = gNativeFunction;
-	//	//}
+    DetourAttach(&(PVOID&)OriginalProcessInternalFunction, ProcessInternalHook);
 
-	//	if (ufunction->iNative)
-	//	{
-	//		PLOG_DEBUG << std::format("Hooking native: [{0}] {1} ({2})", ufunction->iNative, ufunction->GetFullName(),
-	//								  static_cast<void*>(ufunction->Func));
-	//		GNativeFunctionPrototype gNativeFunction = reinterpret_cast<GNativeFunctionPrototype>(ufunction->Func);
-	//		//DetourAttach(&(PVOID&)gNativeFunction, GNativeFunctionHook);
-	//	}
-	//}
+#ifdef _DEBUG
+    DetourAttach(&(PVOID&)OriginalCallFunctionFunction, CallFunctionHook);
+#endif
 
-	auto allUFunctions = GetInstancesUObjects<UFunction>();
-	for (auto& ufunction : allUFunctions)
-	{
-		if (ufunction->iNative)
-		{
-			PLOG_INFO << std::format("{0}->Func Offset = {1}", ufunction->GetFullName(),
-									 reinterpret_cast<void*>(reinterpret_cast<unsigned int>(ufunction->Func) - baseAddress));
-		}
-	}
+    // Hook native functions
 
-	DetourAttach(&(PVOID&)OriginalAActorMove, AActor_Move_Hook);
-	DetourAttach(&(PVOID&)OriginalAActorSetLocation, AActor_SetLocation_Hook);
-	DetourAttach(&(PVOID&)OriginalUWorldMoveActor, UWorld_MoveActor_Hook);
-	DetourAttach(&(PVOID&)OriginalUGameEngineTick, UGameEngine_Tick_Hook);
-	DetourAttach(&(PVOID&)OriginalUWorldTick, UWorld_Tick_Hook);
+    // This is the engine tick function. Hooking here to get the start of each tick
+    DetourAttach(&(PVOID&)OriginalUGameEngineTick, UGameEngine_Tick_Hook);
+    // The MoveActor function is called within engine tick to move all actors
+    // Hook into this to get the latest location of actors and also preform rewinding
+    // of projectiles
+    DetourAttach(&(PVOID&)OriginalUWorldMoveActor, UWorld_MoveActor_Hook);
 
-	auto error = DetourTransactionCommit();
+    auto error{ DetourTransactionCommit() };
 
-	ProcessEventHooks = UFunctionHooks<ProcessEventPrototype>(OriginalProcessEventFunction);
-	ProcessEventHooks.AddHook("Function Engine.HUD.PostRender", Engine_HUD_PostRender_Hook);
-	ProcessEventHooks.AddHook("Function TribesGame.TrGameReplicationInfo.Tick",
-							  TribesGame_TrGameReplicationInfo_Tick_Hook,
-							  FunctionHookType::kPost);
-	ProcessEventHooks.AddHook("Function TribesGame.TrHUD.PostRenderFor", TribesGame_TrHUD_PostRenderFor_Hook);
-	/*ProcessEventHooks.AddHook("Function TribesGame.TrProjectile.PostBeginPlay", TribesGame_TrProjectile_PostBeginPlay);*/
-	
+    ProcessEventHooks = UFunctionHooks<ProcessEventPrototype>(OriginalProcessEventFunction);
+    ProcessInternalHooks = UFunctionHooks<ProcessInternalPrototype>(OriginalProcessInternalFunction);
+    CallFunctionHooks = UFunctionHooks<CallFunctionPrototype>(OriginalCallFunctionFunction);
 
-	ProcessInternalHooks = UFunctionHooks<ProcessInternalPrototype>(OriginalProcessInternalFunction);
-	ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.HurtRadius_Internal", TrProjectile_HurtRadius_Internal_Hook,
-								 FunctionHookType::kPre, FunctionHookAbsorb::kAbsorb);
-	/*ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.InitProjectile",
-							  TribesGame_TrProjectile_InitProjectile_Hook, FunctionHookType::kPost);*/
-	/*ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.Explode",
-								 TribesGame_TrProjectile_Explode_Hook,
-								 FunctionHookType::kPre);*/
-
-	CallFunctionHooks = UFunctionHooks<CallFunctionPrototype>(OriginalCallFunctionFunction);
-
-	//auto ufunction_Engine_Actor_Tick{ UObject::FindObject<UFunction>("Function Engine.Actor.Tick") };
+    // UFunction hook for when a projectile explodes to cause radial (splash) damage
+    ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.HurtRadius_Internal", TrProjectile_HurtRadius_Internal_Hook,
+                                 FunctionHookType::kPre, FunctionHookAbsorb::kAbsorb);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
-					  DWORD  ul_reason_for_call,
-					  LPVOID lpReserved)
+                      DWORD  ul_reason_for_call,
+                      LPVOID lpReserved)
 {
-	switch (ul_reason_for_call)
-	{
-		case DLL_PROCESS_ATTACH:
-			CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)OnDLLProcessAttach, NULL, NULL, NULL);
-			break;
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
-			break;
-	}
-	return TRUE;
+    switch (ul_reason_for_call)
+    {
+    case DLL_PROCESS_ATTACH:
+        CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)OnDLLProcessAttach, NULL, NULL, NULL);
+        break;
+    case DLL_THREAD_ATTACH:
+    case DLL_THREAD_DETACH:
+    case DLL_PROCESS_DETACH:
+        break;
+    }
+    return TRUE;
 }
 
