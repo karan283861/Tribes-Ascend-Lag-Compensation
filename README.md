@@ -1,5 +1,10 @@
+
 # Tribes Ascend Lag Compensation Native
-A DLL mod for Tribes: Ascend which implements lag compensation for projectiles.
+A server-side DLL mod for Tribes: Ascend which implements lag compensation for projectiles.
+
+https://github.com/user-attachments/assets/b92043c7-0f10-4157-95c6-77f6ad96aef8
+
+*A demonstration of playing with 400 ping. Note that projectiles are still drawn delayed on the client depending on ping.*
 
 ## What is Tribes: Ascend
 Tribes: Ascend is a video game from the Tribes series released by Hi-Rez Studios in 2012. It uses Unreal Engine 3 and DirectX 9.
@@ -24,6 +29,13 @@ The original scope of this project was to write a complete lag compensation over
 
 ### Tribes Ascend Lag Compensation Native
 Almost all the functionality I require has already been implemented within the game engine. By reverse engineering the game engine and locating specific native functions I can harness their power to implement a form of lag compensation that is much faster, efficient and shorter than the overlay project.
+
+#### Features
+
+ - [x] Lag compensation for all projectile direct hits
+	 - [x] Linear projectiles
+	 - [x] Arcing (gravity affected) projectiles
+- [x] Lag compensation of radial damage (splash damage)
 
 ## Requirements
  -  Microsoft Visual C++ Redistributable 2022 (x86)
