@@ -29,26 +29,6 @@ public:
     FFrame* m_PreviousFrame{};
 };
 
-using ProcessEventPrototype = void(__fastcall*)(UObject* CallingUObject,
-                                                void* Unused, UFunction* CallingUFunction,
-                                                void* Parameters, void* Result);
-
-void __fastcall ProcessEventHook(UObject* CallingUObject,
-                                 void* Unused, UFunction* CallingUFunction,
-                                 void* Parameters, void* Result);
-
-extern ProcessEventPrototype OriginalProcessEventFunction;
-
-using ProcessInternalPrototype = void(__fastcall*)(UObject* CallingUObject,
-                                                   void* Unused, FFrame& Stack,
-                                                   void* Result);
-
-void __fastcall ProcessInternalHook(UObject* CallingUObject,
-                                    void* Unused, FFrame& Stack,
-                                    void* Result);
-
-extern ProcessInternalPrototype OriginalProcessInternalFunction;
-
 using ProcessInternalPrototype = void(__fastcall*)(UObject* CallingUObject,
                                                    void* Unused, FFrame& Stack,
                                                    void* Result);
@@ -147,9 +127,6 @@ public:
     template<typename... Args>
     const void ExecuteHook(UFunction* ufunction, Args&&... args)
     {
-        /*if (!m_OriginalFunction)
-            return;*/
-
         auto hooks{ GetHooks(ufunction) };
         auto absorbs{ false };
 
@@ -179,7 +156,7 @@ public:
 private:
     const UFunctionHooksInformation* GetHooks(const UFunction* UFunctionObject)
     {
-        if ((UFunctionObject) && (m_UFunctionToHooksInformation.contains(UFunctionObject)))
+        if (UFunctionObject && m_UFunctionToHooksInformation.contains(UFunctionObject))
         {
             return &m_UFunctionToHooksInformation[UFunctionObject];
         }

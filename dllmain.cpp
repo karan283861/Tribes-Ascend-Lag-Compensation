@@ -1,5 +1,6 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include <Windows.h>
+#include <filesystem>
 
 #include "Detours/include/detours.h"
 
@@ -19,18 +20,21 @@
 #include "NativeHooks.hpp"
 #include "Helper.hpp"
 
+//#define HOOK_CALLFUNCTION
+#define LOG_FILE_NAME "LagCompensationLog.txt"
+
 void OnDLLProcessAttach()
 {
     auto baseAddress{ reinterpret_cast<unsigned int>(GetModuleHandle(0)) };
 
+    std::filesystem::remove(LOG_FILE_NAME);
+
 #ifdef _DEBUG
-    //AllocConsole();
-    //freopen("CONOUT$", "w", stdout);
-    static plog::ConsoleAppender<plog::TxtFormatter> consoleAppender;
-    plog::init(plog::debug, &consoleAppender);
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(LOG_FILE_NAME);
+    plog::init(plog::verbose, &fileAppender);
 #else
-    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender("LagCompensationLog.txt");
-    plog::init(plog::warning, &fileAppender);
+    static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(LOG_FILE_NAME);
+    plog::init(plog::info, &fileAppender);
 #endif
     PLOG_INFO << "Successfully Injected DLL.";
     PLOG_INFO << std::format("Base address: {0}", reinterpret_cast<void*>(baseAddress));
@@ -44,7 +48,10 @@ void OnDLLProcessAttach()
 
     DetourAttach(&(PVOID&)OriginalProcessInternalFunction, ProcessInternalHook);
 
-#ifdef _DEBUG
+    // For some reason multiple hooks on CallFunction (eg. multiple injected dlls)
+    // causes buggy behaviour/crashes. We should really only hook CallFunction when
+    // tracing UFunctions in the logs
+#if defined(_DEBUG) && defined(HOOK_CALLFUNCTION)
     DetourAttach(&(PVOID&)OriginalCallFunctionFunction, CallFunctionHook);
 #endif
 
@@ -66,6 +73,10 @@ void OnDLLProcessAttach()
     // UFunction hook for when a projectile explodes to cause radial (splash) damage
     ProcessInternalHooks.AddHook("Function TribesGame.TrProjectile.HurtRadius_Internal", TrProjectile_HurtRadius_Internal_Hook,
                                  FunctionHookType::kPre, FunctionHookAbsorb::kAbsorb);
+
+    // On match start, query the NetDrivers
+    ProcessInternalHooks.AddHook("Function UTGame.MatchInProgress.BeginState", UTGame_MatchInProgress_BeginState_Hook,
+                                 FunctionHookType::kPost);
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,

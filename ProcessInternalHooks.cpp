@@ -4,10 +4,7 @@
 #include "LagCompensation.hpp"
 #include "Helper.hpp"
 
-void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
-                                                      void* Unused,
-                                                      FFrame& Stack,
-                                                      void* Result)
+PROCESSINTERNAL_HOOK(TrProjectile_HurtRadius_Internal_Hook)
 {
     PLOG_DEBUG << __FUNCTION__;
 
@@ -58,4 +55,13 @@ void __fastcall TrProjectile_HurtRadius_Internal_Hook(UObject* CallingUObject,
     }
 
     return OriginalProcessInternalFunction(CallingUObject, Unused, Stack, Result);
+}
+
+PROCESSINTERNAL_HOOK(UTGame_MatchInProgress_BeginState_Hook)
+{
+    PLOG_DEBUG << __FUNCTION__;
+    UpdateTickVariables();
+    // Game is starting, and tick related variables may have changed
+    // so lets clear the lag compensation buffer just to be safe
+    lagCompensationBuffer.clear();
 }

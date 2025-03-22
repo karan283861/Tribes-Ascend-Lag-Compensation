@@ -1,4 +1,6 @@
 #include <format>
+#include <filesystem>
+#include <unordered_set>
 #include <plog/Log.h>
 #include "LagCompensation.hpp"
 #include "Helper.hpp"
@@ -107,5 +109,35 @@ void RestorePlayers(float PingInMS)
             // the collision component too)
             gamePawn->SetLocation(latestLagCompensationTick.m_PlayerToLocation.at(gamePawn));
         }
+    }
+}
+
+void UpdateTickVariables(void)
+{
+    // Get all NetDrivers
+    auto netDrivers{ GetInstancesUObjects<UNetDriver>() };
+    // Keep a set of tick rates assigned to each NetDriver
+    auto setOfTickRates = std::unordered_set<float>();
+    for (auto& netDriver : netDrivers)
+    {
+        if (netDriver->NetServerMaxTickRate)
+            setOfTickRates.insert(netDriver->NetServerMaxTickRate);
+    }
+    if (setOfTickRates.size() > 1)
+    {
+        // Multiple NetDrivers found, with different tick rates
+        PLOG_ERROR << "Conflicting NetDriver Tick Rates found";
+    }
+    else if (setOfTickRates.size() == 0)
+    {
+        PLOG_ERROR << "No NetDrivers found";
+    }
+    else
+    {
+        TickRate = *setOfTickRates.begin();
+        TickDeltaInMS =  1000.0f / TickRate ;
+        LagCompensationBufferSize = static_cast<unsigned int>(/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1);
+        lagCompensationBuffer = CircularBuffer<LagCompensationTick>(LagCompensationBufferSize);
+        PLOG_INFO << std::format("Set tick rate to {0}", TickRate);
     }
 }

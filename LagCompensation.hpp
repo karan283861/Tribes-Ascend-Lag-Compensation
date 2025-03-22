@@ -6,14 +6,14 @@
 // ping value. Obviously DEBUG_PING must be greater than zero, and less than
 // LagCompensationWindowInMs otherwise the projectile will not be in the lag compensation buffer
 #ifdef _DEBUG
-#define DEBUG_PING (300.0)
+#define DEBUG_PING (300.0f)
 #endif
 
-// Hardcoded tick rate - This can be modified but for now we'll use the default value of 30
-static const float TickRate{ 30.0 };
-static const float TickDeltaInMS{ 1000.0 / TickRate };
-static const float LagCompensationWindowInMs{ 2000.0 };
-static const unsigned int LagCompensationBufferSize{ static_cast<unsigned int>(/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1) };
+// Tick rate - This can be modified externally, initialise to the default value of 30
+static float TickRate{ 30.0f };
+static float TickDeltaInMS{ 1000.0f / TickRate };
+static float LagCompensationWindowInMs{ 2000.0f };
+static unsigned int LagCompensationBufferSize{ static_cast<unsigned int>(/*ceil*/(LagCompensationWindowInMs / TickDeltaInMS) + 1) };
 
 class LagCompensationTick
 {
@@ -38,3 +38,5 @@ LagCompensationTick* GetPreviousLagCompensationTick(float PingInMS);
 void RewindPlayers(float PingInMS);
 // Move players forward in time to their location corresponding to latest tick
 void RestorePlayers(float PingInMS);
+// Update lag compensation tick related variables
+void UpdateTickVariables(void);

@@ -152,8 +152,8 @@
     <ClCompile Include="NativeHooks.cpp" />
     <ClCompile Include="NativeHooks.hpp" />
     <ClCompile Include="ProcessEventHooks.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ProcessInternalHooks.cpp" />
     <ClCompile Include="Tribes-Ascend-SDK\SDK_SOURCES\Core_functions.cpp" />
@@ -175,8 +175,8 @@
     <ClInclude Include="Hook.hpp" />
     <ClInclude Include="LagCompensation.hpp" />
     <ClInclude Include="ProcessEventHooks.hpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="ProcessInternalHooks.hpp" />
     <ClInclude Include="Tribes-Ascend-SDK\SdkHeaders.h" />
